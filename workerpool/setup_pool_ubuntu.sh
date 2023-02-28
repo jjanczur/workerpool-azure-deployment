@@ -32,6 +32,7 @@ echo "                                                                "
 
 sudo apt-get update -y &&
 sudo apt-get -y install git-all &&
+sudo apt-get -y install jq &&
 
 echo "                                                                "
 echo "________________________________________________________________"
@@ -83,7 +84,7 @@ npm i -g iexec &&
 
 echo "                                                                "
 echo "________________________________________________________________"
-echo "## Preparing the worker ##                                      "
+echo "## Preparing the workerpool ##                                      "
 echo "                                                                "
 
 # Clone docker Scripts
@@ -91,6 +92,7 @@ git clone https://github.com/jjanczur/workerpool-azure-deployment.git
 checkExitStatus $?  "Can't pull https://github.com/jjanczur/workerpool-azure-deployment.git"
 
 # REMOVE BEFORE MERGE TO MAIN
+cd workerpool-azure-deployment
 git checkout separated-pool-worker-scripts
 checkExitStatus $?  "Can't checkout the branch separated-pool-worker-scripts"
 
@@ -115,10 +117,12 @@ message "INFO" "Deploying the workerpool."
 iexec workerpool init --wallet-file workerpool_wallet.json --password $PROD_CORE_WALLET_PASSWORD --keystoredir .
 checkExitStatus $?  "Can't init workerpool"
 
+jq --arg desc "$GRAFANA_HOME_NAME" '.workerpool.description = $desc' iexec.json > tmp_file && mv tmp_file iexec.json
+checkExitStatus $? "Can't change the name of the pool."
+
 iexec workerpool deploy --wallet-file workerpool_wallet.json --password $PROD_CORE_WALLET_PASSWORD  --keystoredir .  --chain bellecour
 checkExitStatus $?  "Can't deploy workerpool"
 
-IEXEC_SHOW_POOL=$(iexec workerpool show)
 checkExitStatus $? "Can't show the pool. Failed init."
 PROD_POOL_ADDRESS=$(jq -r '.workerpool."134"' deployed.json)
 
