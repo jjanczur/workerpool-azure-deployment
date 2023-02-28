@@ -90,6 +90,10 @@ echo "                                                                "
 git clone https://github.com/jjanczur/workerpool-azure-deployment.git
 checkExitStatus $?  "Can't pull https://github.com/jjanczur/workerpool-azure-deployment.git"
 
+# REMOVE BEFORE MERGE TO MAIN
+git checkout separated-pool-worker-scripts
+checkExitStatus $?  "Can't checkout the branch separated-pool-worker-scripts"
+
 cd workerpool-azure-deployment/workerpool
 checkExitStatus $?  "Can't cd to non existing location workerpool-azure-deployment"
 
