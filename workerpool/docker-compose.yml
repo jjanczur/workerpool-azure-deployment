@@ -44,7 +44,7 @@ services:
       
     
     volumes:
-      - ./workerpool_owner_wallet.json:/iexec-wallet/encrypted-wallet.json
+      - ./workerpool_wallet.json:/iexec-wallet/encrypted-wallet.json
     expose:
       - "13000"
     ports:
@@ -137,7 +137,7 @@ services:
       - IEXEC_BLOCKCHAIN_ADAPTER_API_GAS_PRICE_MULTIPLIER=$GAS_PRICE_MULTIPLIER
       - IEXEC_BLOCKCHAIN_ADAPTER_API_GAS_PRICE_CAP=$GAS_PRICE_CAP
     volumes:
-      - ./workerpool_owner_wallet.json:/wallet.json
+      - ./workerpool_wallet.json:/wallet.json
     ports:
       - 13010:13010
     restart: unless-stopped
@@ -193,7 +193,7 @@ services:
       - DATASET_RESTRICT=
       - REQUESTER_RESTRICT=$ORDER_PUBLISHER_REQUESTER_RESTRICT
     volumes:
-      - ./wallet.json:/wallets/wallet.json
+      - ./workerpool_wallet.json:/wallets/wallet.json
     restart: unless-stopped
     depends_on:
       - core

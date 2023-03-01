@@ -96,7 +96,7 @@ cd workerpool-azure-deployment
 git checkout separated-pool-worker-scripts
 checkExitStatus $?  "Can't checkout the branch separated-pool-worker-scripts"
 
-cd workerpool-azure-deployment/workerpool
+cd workerpool
 checkExitStatus $?  "Can't cd to non existing location workerpool-azure-deployment"
 
 PROD_CORE_WALLET_PASSWORD=${PROD_CORE_WALLET_PASSWORD:-mySecretPassword}
@@ -105,6 +105,12 @@ PROD_CORE_WALLET_PASSWORD=${PROD_CORE_WALLET_PASSWORD:-mySecretPassword}
 message "INFO" "Initializing iExec."
 iexec init --skip-wallet
 checkExitStatus $?  "Can't init iexec"
+
+# Change the chain from viviani to bellecour
+message "INFO" "Changing chain to bellecour."
+jq '.default = "bellecour"' chain.json > temp.json && mv temp.json chain.json
+checkExitStatus $?  "Can't change chain to bellecour"
+
 # Import wallet
 message "INFO" "Importing the wallet."
 iexec wallet import $PRIVATE_KEY --password $PROD_CORE_WALLET_PASSWORD --keystoredir .
