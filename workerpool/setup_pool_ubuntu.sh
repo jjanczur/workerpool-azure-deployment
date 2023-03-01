@@ -126,11 +126,23 @@ checkExitStatus $?  "Can't init workerpool"
 jq --arg desc "$GRAFANA_HOME_NAME" '.workerpool.description = $desc' iexec.json > tmp_file && mv tmp_file iexec.json
 checkExitStatus $? "Can't change the name of the pool."
 
-iexec workerpool deploy --wallet-file workerpool_wallet.json --password $PROD_CORE_WALLET_PASSWORD  --keystoredir .  --chain bellecour
-checkExitStatus $?  "Can't deploy workerpool"
+# You can deploy only a single pool from one wallet - handle this scenario with deploying already existing pool
+if iexec workerpool deploy --wallet-file workerpool_wallet.json --password $PROD_CORE_WALLET_PASSWORD --keystoredir . --chain bellecour; then
+  message "INFO" "Pool Deployed to blockchain."
+  PROD_POOL_ADDRESS=$(jq -r '.workerpool."134"' deployed.json)
+else
+  response=$(iexec workerpool deploy --wallet-file workerpool_wallet.json --password $PROD_CORE_WALLET_PASSWORD --keystoredir . --chain bellecour 2>&1 >/dev/null)
+  echo "Failed: $response"
+  PROD_POOL_ADDRESS=$(echo "$response" | grep -o 'deployed at address [^ ]*' | sed 's/deployed at address //')
 
-checkExitStatus $? "Can't show the pool. Failed init."
-PROD_POOL_ADDRESS=$(jq -r '.workerpool."134"' deployed.json)
+  # Check if we got the address or the error is connected to something else
+  if [ ${#PROD_POOL_ADDRESS} -ne 42 ]; then
+    message "ERROR" "Could not deploy the pool"
+  fi
+fi
+
+if echo $PROD_POOL_ADDRESS | wc -c
+
 
 echo "                                                                "
 echo "________________________________________________________________"
