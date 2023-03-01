@@ -12,7 +12,7 @@ function message() {
 
 # Function which checks exit status and stops execution
 function checkExitStatus() {
-  if [ $1 -eq 0 ]; then
+  if [ "$1" -eq 0 ]; then
     message "OK" ""
   else
     message "ERROR" "$2"
@@ -45,7 +45,7 @@ sudo apt-get -y install docker.io &&
 sudo service docker start &&
 # Allow running docker without sudo 
 # Reboot instance or logout and login again
-sudo usermod -a -G docker $USER &&
+sudo usermod -a -G docker "$USER" &&
 
 echo "                                                                "
 echo "________________________________________________________________"
@@ -92,11 +92,11 @@ git clone https://github.com/jjanczur/workerpool-azure-deployment.git
 checkExitStatus $?  "Can't pull https://github.com/jjanczur/workerpool-azure-deployment.git"
 
 # REMOVE BEFORE MERGE TO MAIN
-cd workerpool-azure-deployment
+cd workerpool-azure-deployment || exit
 git checkout separated-pool-worker-scripts
 checkExitStatus $?  "Can't checkout the branch separated-pool-worker-scripts"
 
-cd workerpool
+cd workerpool || exit
 checkExitStatus $?  "Can't cd to non existing location workerpool-azure-deployment"
 
 PROD_CORE_WALLET_PASSWORD=${PROD_CORE_WALLET_PASSWORD:-mySecretPassword}
@@ -113,26 +113,25 @@ checkExitStatus $?  "Can't change chain to bellecour"
 
 # Import wallet
 message "INFO" "Importing the wallet."
-iexec wallet import $PRIVATE_KEY --password $PROD_CORE_WALLET_PASSWORD --keystoredir .
+iexec wallet import "$PRIVATE_KEY" --password "$PROD_CORE_WALLET_PASSWORD" --keystoredir .
 checkExitStatus $?  "Can't import the wallet"
 
 mv UTC--* workerpool_wallet.json && # rename the wallet
 
 # Deploy workerpool
 message "INFO" "Deploying the workerpool."
-iexec workerpool init --wallet-file workerpool_wallet.json --password $PROD_CORE_WALLET_PASSWORD --keystoredir .
+iexec workerpool init --wallet-file workerpool_wallet.json --password "$PROD_CORE_WALLET_PASSWORD" --keystoredir .
 checkExitStatus $?  "Can't init workerpool"
 
 jq --arg desc "$GRAFANA_HOME_NAME" '.workerpool.description = $desc' iexec.json > tmp_file && mv tmp_file iexec.json
 checkExitStatus $? "Can't change the name of the pool."
 
 # You can deploy only a single pool from one wallet - handle this scenario with deploying already existing pool
-if iexec workerpool deploy --wallet-file workerpool_wallet.json --password $PROD_CORE_WALLET_PASSWORD --keystoredir . --chain bellecour; then
+if iexec workerpool deploy --wallet-file workerpool_wallet.json --password "$PROD_CORE_WALLET_PASSWORD" --keystoredir . --chain bellecour; then
   message "INFO" "Pool Deployed to blockchain."
   PROD_POOL_ADDRESS=$(jq -r '.workerpool."134"' deployed.json)
 else
-  response=$(iexec workerpool deploy --wallet-file workerpool_wallet.json --password $PROD_CORE_WALLET_PASSWORD --keystoredir . --chain bellecour 2>&1 >/dev/null)
-  echo "Failed: $response"
+  response=$(iexec workerpool deploy --wallet-file workerpool_wallet.json --password "$PROD_CORE_WALLET_PASSWORD" --keystoredir . --chain bellecour 2>&1 >/dev/null)
   PROD_POOL_ADDRESS=$(echo "$response" | grep -o 'deployed at address [^ ]*' | sed 's/deployed at address //')
 
   # Check if we got the address or the error is connected to something else
@@ -140,8 +139,6 @@ else
     message "ERROR" "Could not deploy the pool"
   fi
 fi
-
-if echo $PROD_POOL_ADDRESS | wc -c
 
 
 echo "                                                                "
