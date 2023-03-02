@@ -135,6 +135,9 @@ else
   fi
 fi
 
+# Fetch the IP address of the current machine
+PROD_CHAIN_ADAPTER_HOST=$(curl -4 icanhazip.com)
+checkExitStatus $?  "Can't check the IP address of the VM"
 
 echo "                                                                "
 echo "________________________________________________________________"
@@ -145,7 +148,7 @@ echo "## Starting the worker ##                                       "
 echo "PROD_CORE_WALLET_PASSWORD=$PROD_CORE_WALLET_PASSWORD" >> .env
 echo "WORKER_PASS_ADDRESS=$WORKER_PASS_ADDRESS" >> .env
 
-
+echo "PROD_CHAIN_ADAPTER_HOST=$PROD_CHAIN_ADAPTER_HOST" >> .env
 echo "PROD_CHAIN_ADAPTER_PASSWORD=$PROD_CHAIN_ADAPTER_PASSWORD" >> .env
 echo "PROD_GRAFANA_ADMIN_PASSWORD=$PROD_GRAFANA_ADMIN_PASSWORD" >> .env
 echo "PROD_MONGO_PASSWORD=$PROD_MONGO_PASSWORD" >> .env
