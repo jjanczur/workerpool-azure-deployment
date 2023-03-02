@@ -91,12 +91,7 @@ echo "                                                                "
 git clone https://github.com/jjanczur/workerpool-azure-deployment.git
 checkExitStatus $?  "Can't pull https://github.com/jjanczur/workerpool-azure-deployment.git"
 
-# REMOVE BEFORE MERGE TO MAIN
-cd workerpool-azure-deployment || exit
-git checkout separated-pool-worker-scripts
-checkExitStatus $?  "Can't checkout the branch separated-pool-worker-scripts"
-
-cd workerpool || exit
+cd workerpool-azure-deployment/workerpool || exit
 checkExitStatus $?  "Can't cd to non existing location workerpool-azure-deployment"
 
 PROD_CORE_WALLET_PASSWORD=${PROD_CORE_WALLET_PASSWORD:-mySecretPassword}
@@ -127,7 +122,7 @@ jq --arg desc "$GRAFANA_HOME_NAME" '.workerpool.description = $desc' iexec.json 
 checkExitStatus $? "Can't change the name of the pool."
 
 # You can deploy only a single pool from one wallet - handle this scenario with deploying already existing pool
-if iexec workerpool deploy --wallet-file workerpool_wallet.json --password "$PROD_CORE_WALLET_PASSWORD" --keystoredir . --chain bellecour; then
+if iexec workerpool deploy --wallet-file workerpool_wallet.json --password "$PROD_CORE_WALLET_PASSWORD" --keystoredir . --chain bellecour 2>&1 >/dev/null; then
   message "INFO" "Pool Deployed to blockchain."
   PROD_POOL_ADDRESS=$(jq -r '.workerpool."134"' deployed.json)
 else
@@ -136,7 +131,7 @@ else
 
   # Check if we got the address or the error is connected to something else
   if [ ${#PROD_POOL_ADDRESS} -ne 42 ]; then
-    message "ERROR" "Could not deploy the pool"
+    message "ERROR" "Could not deploy the pool: $response"
   fi
 fi
 
