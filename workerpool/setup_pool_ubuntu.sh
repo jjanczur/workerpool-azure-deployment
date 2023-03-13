@@ -30,9 +30,9 @@ echo "________________________________________________________________"
 echo "## Start Setup script ##                                        "
 echo "                                                                "
 
-sudo apt-get update -y &&
+sudo apt-get update -y 
+sudo apt-get -y install jq 
 sudo apt-get -y install git-all &&
-sudo apt-get -y install jq &&
 
 echo "                                                                "
 echo "________________________________________________________________"
